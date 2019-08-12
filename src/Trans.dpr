@@ -17,7 +17,7 @@ begin
   {$ENDIF}
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Sky');
+  TStyleManager.TrySetStyle('Copper');
   Application.CreateForm(TfmMain, fmMain);
   Application.Run;
 end.
