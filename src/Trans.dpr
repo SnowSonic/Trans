@@ -17,7 +17,7 @@ begin
   {$ENDIF}
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Copper');
+  TStyleManager.TrySetStyle('Material Patterns Blue SS');
   Application.CreateForm(TfmMain, fmMain);
   Application.Run;
 end.
