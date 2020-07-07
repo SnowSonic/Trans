@@ -160,7 +160,7 @@ begin
       begin
         Lin := TStringStream.Create;
         HTTP := TNetHTTPClient.Create(Self);
-        HTTP.Get('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=' +
+        HTTP.Get('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=' +
             edPhraze.Text, Lin);
         HTTP.Free;
 
