@@ -1,4 +1,4 @@
-unit Main;
+﻿unit Main;
 
 interface
 
@@ -41,21 +41,49 @@ var
 implementation
 
 uses
-  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, djson;
+  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, djson, Clipbrd;
 
 const
-  ci_HotKey = 511235;
+  ci_hkWinF12 = 511235;
+  ci_hkCtrlWinF12 = 511236;
 
 {$R *.dfm}
 
-procedure TfmMain.FormDestroy(Sender: TObject);
-begin
-  UnregisterHotKey(Handle, ci_HotKey);
-end;
-
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
-  RegisterHotKey(Handle, ci_HotKey, MOD_WIN, VK_F12);
+  RegisterHotKey(Handle, ci_hkWinF12, MOD_WIN, VK_F12);
+  RegisterHotKey(Handle, ci_hkCtrlWinF12, MOD_WIN + MOD_CONTROL, VK_F12);
+end;
+
+procedure TfmMain.FormDestroy(Sender: TObject);
+begin
+  UnregisterHotKey(Handle, ci_hkWinF12);
+  UnregisterHotKey(Handle, ci_hkCtrlWinF12);
+end;
+
+procedure TfmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CanClose := False;
+  fmMain.Visible := False;
+end;
+
+procedure TfmMain.WMHotKey(var Message: TMessage);
+begin
+  // Нажали как минимум Win+F12
+  fmMain.Visible := True;
+  Application.BringToFront;
+  // А если еще нажата Ctrl, то переводим буфер обмена
+  if ((Message.LParam and MOD_CONTROL) = MOD_CONTROL) then
+  begin
+    edPhraze.Text := Clipboard.AsText;
+    Update;
+    Translate;
+  end;
+end;
+
+procedure TfmMain.miExitClick(Sender: TObject);
+begin
+  Application.Terminate;
 end;
 
 procedure TfmMain.edPhrazeKeyPress(Sender: TObject; var Key: Char);
@@ -78,6 +106,43 @@ begin
       ClearAll;
     Key := #0;
   end;
+end;
+
+procedure TfmMain.ppmTrayPopup(Sender: TObject);
+begin
+  miShowHide.Checked := fmMain.Visible;
+end;
+
+procedure TfmMain.edPhrazeLeftButtonClick(Sender: TObject);
+begin
+  ClearAll;
+end;
+
+procedure TfmMain.edPhrazeRightButtonClick(Sender: TObject);
+begin
+  Translate;
+end;
+
+procedure TfmMain.miShowHideClick(Sender: TObject);
+begin
+  ToggleForm;
+end;
+
+procedure TfmMain.TrayDblClick(Sender: TObject);
+begin
+  ToggleForm;
+end;
+
+procedure TfmMain.ToggleForm;
+begin
+  fmMain.Visible := not fmMain.Visible;
+end;
+
+procedure TfmMain.ClearAll;
+begin
+  memTranslated.Lines.Clear;
+  edPhraze.Text := '';
+  ActiveControl := edPhraze;
 end;
 
 procedure TfmMain.Translate;
@@ -111,60 +176,6 @@ begin
       end);
     Task.Start;
   end;
-end;
-
-procedure TfmMain.ClearAll;
-begin
-  memTranslated.Lines.Clear;
-  edPhraze.Text := '';
-  ActiveControl := edPhraze;
-end;
-
-procedure TfmMain.edPhrazeLeftButtonClick(Sender: TObject);
-begin
-  ClearAll;
-end;
-
-procedure TfmMain.edPhrazeRightButtonClick(Sender: TObject);
-begin
-  Translate;
-end;
-
-procedure TfmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-begin
-  CanClose := False;
-  fmMain.Visible := False;
-end;
-
-procedure TfmMain.miExitClick(Sender: TObject);
-begin
-  Application.Terminate;
-end;
-
-procedure TfmMain.miShowHideClick(Sender: TObject);
-begin
-  ToggleForm;
-end;
-
-procedure TfmMain.ppmTrayPopup(Sender: TObject);
-begin
-  miShowHide.Checked := fmMain.Visible;
-end;
-
-procedure TfmMain.TrayDblClick(Sender: TObject);
-begin
-  ToggleForm;
-end;
-
-procedure TfmMain.WMHotKey(var Message: TMessage);
-begin
-  fmMain.Visible := True;
-  Application.BringToFront;
-end;
-
-procedure TfmMain.ToggleForm;
-begin
-  fmMain.Visible := not fmMain.Visible;
 end;
 
 end.
