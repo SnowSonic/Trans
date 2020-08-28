@@ -6,3 +6,4 @@
 *.json
 *.exe
 src/__recovery/
+bin/
