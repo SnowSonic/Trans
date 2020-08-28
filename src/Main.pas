@@ -43,6 +43,9 @@ implementation
 uses
   System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, djson, Clipbrd;
 
+resourcestring
+  csGoogleAPITranslate = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=';
+
 const
   ci_hkWinF12 = 511235;
   ci_hkCtrlWinF12 = 511236;
@@ -160,8 +163,7 @@ begin
       begin
         Lin := TStringStream.Create;
         HTTP := TNetHTTPClient.Create(Self);
-        HTTP.Get('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=' +
-            edPhraze.Text, Lin);
+        HTTP.Get(csGoogleAPITranslate + edPhraze.Text, Lin);
         HTTP.Free;
 
         JO := TdJSON.Parse(Utf8ToAnsi(RawByteString(Lin.DataString)));
