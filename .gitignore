@@ -4,3 +4,5 @@
 *.identcache
 *.local
 *.json
+*.exe
+src/__recovery/
