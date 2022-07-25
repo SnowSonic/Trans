@@ -3,8 +3,8 @@
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Vcl.ExtCtrls, Vcl.Menus, System.Threading, System.ImageList, Vcl.ImgList, PngImageList;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Menus, System.Threading, System.ImageList, Vcl.ImgList, PngImageList;
 
 type
   TfmMain = class(TForm)
@@ -41,27 +41,31 @@ var
 implementation
 
 uses
-  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, djson, Clipbrd;
-
-resourcestring
-  csGoogleAPITranslate = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=';
+  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, djson, Clipbrd, FormState;
 
 const
+  csGoogleAPITranslate = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=';
   ci_hkWinF12 = 511235;
-  ci_hkCtrlWinF12 = 511236;
+  ci_hkWinF2 = 511236;
+  csRegRoot = 'Software\Trans';
+  csSection = 'Form';
 
 {$R *.dfm}
 
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
-  RegisterHotKey(Handle, ci_hkWinF12, MOD_WIN, VK_F12);
-  RegisterHotKey(Handle, ci_hkCtrlWinF12, MOD_WIN + MOD_CONTROL, VK_F12);
+  if not RegisterHotKey(Handle, ci_hkWinF12, MOD_WIN, VK_F12) then
+    memTranslated.Lines.Add('Win+F12 not registered');
+  if not RegisterHotKey(Handle, ci_hkWinF2, MOD_WIN, VK_F2) then
+    memTranslated.Lines.Add('Win+F2 not registered');
+  LoadFormState(self, csRegRoot, csSection);
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
+  SaveFormState(self, csRegRoot, csSection);
+  UnregisterHotKey(Handle, ci_hkWinF2);
   UnregisterHotKey(Handle, ci_hkWinF12);
-  UnregisterHotKey(Handle, ci_hkCtrlWinF12);
 end;
 
 procedure TfmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -71,16 +75,21 @@ begin
 end;
 
 procedure TfmMain.WMHotKey(var Message: TMessage);
-begin
-  // Нажали как минимум Win+F12
-  fmMain.Visible := True;
-  Application.BringToFront;
-  // А если еще нажата Ctrl, то переводим буфер обмена
-  if ((Message.LParam and MOD_CONTROL) = MOD_CONTROL) then
+  procedure Paste;
   begin
-    edPhraze.Text := Clipboard.AsText;
+    edPhraze.Text := StringReplace(StringReplace(StringReplace(Clipboard.AsText, #13, #32, [rfReplaceAll]), #10, #32, [rfReplaceAll]), #9, #32, [rfReplaceAll]);
     Update;
     Translate;
+  end;
+
+begin
+  fmMain.Visible := True;
+  Application.BringToFront;
+  case message.WParam of
+    ci_hkWinF12:
+      ;
+    ci_hkWinF2:
+      Paste;
   end;
 end;
 
@@ -160,6 +169,7 @@ begin
         Lin: TStringStream;
         HTTP: TNetHTTPClient;
         JO, alt, word: TdJSON;
+        L: array of string;
       begin
         Lin := TStringStream.Create;
         HTTP := TNetHTTPClient.Create(Self);
@@ -170,11 +180,24 @@ begin
         Lin.Free;
         try
           for alt in JO['alternative_translations'] do
+          begin
+            var i := 1;
             for word in alt['alternative'] do
-              memTranslated.Lines.Add(word['word_postproc'].asString.Replace('"', ''));
+            begin
+              if Length(L) < i then
+                SetLength(L, i);
+              L[i-1] := L[i-1] + word['word_postproc'].asString.Replace('"', '') + #13#10;
+              Inc(i);
+            end;
+          end;
+          for var sens in JO['sentences'] do
+            memTranslated.Lines.Add(sens['orig'].AsString);
         finally
           JO.Free;
         end;
+        memTranslated.Lines.Add('');
+        for var s in L do
+          memTranslated.Lines.Add('▼ '#13#10 + s);
       end);
     Task.Start;
   end;
