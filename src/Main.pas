@@ -41,7 +41,7 @@ var
 implementation
 
 uses
-  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, djson, Clipbrd, FormState;
+  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, Clipbrd, FormState, JsonDataObjects;
 
 const
   csGoogleAPITranslate = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=';
@@ -160,6 +160,7 @@ end;
 procedure TfmMain.Translate;
 var
   Task: ITask;
+  json: TJsonObject;
 begin
   if Trim(edPhraze.Text).Length > 0 then
   begin
@@ -168,32 +169,42 @@ begin
       var
         Lin: TStringStream;
         HTTP: TNetHTTPClient;
-        JO, alt, word: TdJSON;
         L: array of string;
       begin
+        {$REGION 'get translate response'}
         Lin := TStringStream.Create;
-        HTTP := TNetHTTPClient.Create(Self);
-        HTTP.Get(csGoogleAPITranslate + edPhraze.Text, Lin);
-        HTTP.Free;
-
-        JO := TdJSON.Parse(Utf8ToAnsi(RawByteString(Lin.DataString)));
-        Lin.Free;
         try
-          for alt in JO['alternative_translations'] do
-          begin
-            var i := 1;
-            for word in alt['alternative'] do
-            begin
-              if Length(L) < i then
-                SetLength(L, i);
-              L[i-1] := L[i-1] + word['word_postproc'].asString.Replace('"', '') + #13#10;
-              Inc(i);
-            end;
+          HTTP := TNetHTTPClient.Create(Self);
+          try
+            HTTP.Get(csGoogleAPITranslate + edPhraze.Text, Lin);
+          finally
+            HTTP.Free;
           end;
-          for var sens in JO['sentences'] do
-            memTranslated.Lines.Add(sens['orig'].AsString);
+          json := TJsonObject.Parse(Utf8ToAnsi(RawByteString(Lin.DataString))) as TJsonObject;
         finally
-          JO.Free;
+          Lin.Free;
+        end;
+        {$ENDREGION}
+        // Якщо було створено та було перекладання
+        if Assigned(json) then
+        try
+          if json.Contains('alternative_translations') then
+            for var alttrans in json.A['alternative_translations'] do
+            begin
+              var i := 1;
+              for var alt in alttrans.A['alternative'] do
+              begin
+                if Length(L) < i then
+                  SetLength(L, i);
+                L[i-1] := L[i-1] + alt.S['word_postproc'].Replace('"', '') + #13#10;
+                Inc(i);
+              end;
+            end;
+
+          for var sens in json.A['sentences'] do
+            memTranslated.Lines.Add(sens.S['orig']);
+        finally
+          json.Free;
         end;
         memTranslated.Lines.Add('');
         for var s in L do
