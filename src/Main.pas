@@ -59,6 +59,10 @@ begin
   if not RegisterHotKey(Handle, ci_hkWinF2, MOD_WIN, VK_F2) then
     memTranslated.Lines.Add('Win+F2 not registered');
   LoadFormState(self, csRegRoot, csSection);
+  Tray.Hint := 'Win+F2 - Перекласти буфер обміну'#13#10'Win+F12 - Відкрити вікно перекладу';
+  Tray.BalloonTitle := 'Підказка';
+  Tray.BalloonHint := Tray.Hint;
+  Tray.ShowBalloonHint;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);

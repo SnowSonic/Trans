@@ -3,7 +3,7 @@ object fmMain: TfmMain
   Top = 0
   ActiveControl = edPhraze
   BorderStyle = bsSizeToolWin
-  Caption = #1055#1077#1088#1077#1074#1086#1076#1095#1080#1082
+  Caption = #1055#1077#1088#1077#1082#1083#1072#1076#1072#1095
   ClientHeight = 177
   ClientWidth = 192
   Color = clBtnFace
@@ -48,7 +48,7 @@ object fmMain: TfmMain
     OnRightButtonClick = edPhrazeRightButtonClick
   end
   object Tray: TTrayIcon
-    Hint = 'Ctrl+Win+F12 - '#1055#1077#1088#1077#1074#1077#1089#1090#1080' '#1073#1091#1092#1077#1088' '#1086#1073#1084#1077#1085#1072
+    BalloonTimeout = 3000
     Icon.Data = {
       0000010005006060000001002000A89400005600000048480000010020008854
       0000FE9400003030000001002000A825000086E900002020000001002000A810
@@ -2399,12 +2399,12 @@ object fmMain: TfmMain
     Left = 120
     Top = 88
     object miShowHide: TMenuItem
-      Caption = 'Visible'
+      Caption = #1042#1110#1082#1085#1086' '#1087#1077#1088#1077#1082#1083#1072#1076#1091
       Default = True
       OnClick = miShowHideClick
     end
     object miExit: TMenuItem
-      Caption = 'Exit'
+      Caption = #1042#1080#1093#1110#1076
       OnClick = miExitClick
     end
   end
