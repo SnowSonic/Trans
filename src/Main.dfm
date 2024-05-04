@@ -14,13 +14,11 @@ object fmMain: TfmMain
   Font.Style = []
   FormStyle = fsStayOnTop
   KeyPreview = True
-  OldCreateOrder = False
   ScreenSnap = True
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
-  PixelsPerInch = 96
   TextHeight = 16
   object memTranslated: TMemo
     Left = 0
@@ -28,6 +26,9 @@ object fmMain: TfmMain
     Width = 192
     Height = 153
     Align = alClient
+    BorderStyle = bsNone
+    HideSelection = False
+    ScrollBars = ssVertical
     TabOrder = 0
   end
   object edPhraze: TButtonedEdit
@@ -37,6 +38,7 @@ object fmMain: TfmMain
     Height = 24
     Align = alTop
     Alignment = taCenter
+    BorderStyle = bsNone
     Images = Images
     LeftButton.ImageIndex = 0
     LeftButton.Visible = True

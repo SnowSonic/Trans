@@ -3,8 +3,10 @@
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
-  Vcl.Menus, System.Threading, System.ImageList, Vcl.ImgList, PngImageList;
+  Winapi.Windows, Winapi.Messages,
+  System.SysUtils, System.Variants, System.Classes, System.Threading, System.ImageList,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Menus, Vcl.ImgList,
+  PngImageList;
 
 type
   TfmMain = class(TForm)
@@ -41,10 +43,16 @@ var
 implementation
 
 uses
-  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, Clipbrd, FormState, JsonDataObjects;
+  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent,
+  Vcl.Clipbrd,
+  FormState, JsonDataObjects, pm.iif;
 
 const
-  csGoogleAPITranslate = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&hl=ru&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=';
+  csMarkInput = '→ '; // →
+  csMarkOutput = '● '; // ●
+  csLAng = 'uk';
+  csPara = ''; // Можливо поставити ¶
+  csGoogleAPITranslate = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + csLang + '&hl=' + csLang + '&dt=t&dt=at&dj=1&source=icon&tk=467103.467103&q=';
   ci_hkWinF12 = 511235;
   ci_hkWinF2 = 511236;
   csRegRoot = 'Software\Trans';
@@ -90,10 +98,8 @@ begin
   fmMain.Visible := True;
   Application.BringToFront;
   case message.WParam of
-    ci_hkWinF12:
-      ;
-    ci_hkWinF2:
-      Paste;
+    ci_hkWinF12: ;
+    ci_hkWinF2:  Paste;
   end;
 end;
 
@@ -200,19 +206,24 @@ begin
               begin
                 if Length(L) < i then
                   SetLength(L, i);
-                L[i-1] := L[i-1] + alt.S['word_postproc'].Replace('"', '') + #13#10;
+                L[i-1] := L[i-1] + alt.S['word_postproc'].Replace('"', '') + csPara + #13#10;
                 Inc(i);
               end;
             end;
-
+          var first := True;
           for var sens in json.A['sentences'] do
-            memTranslated.Lines.Add(sens.S['orig']);
+          begin
+            memTranslated.Lines.Add(iif(first, csMarkInput, '') + sens.S['orig'] + csPara); //¨¶‣·‥⁘⇛⇒
+            first := false;
+          end;
         finally
           json.Free;
         end;
-        memTranslated.Lines.Add('');
+        var LineN := memTranslated.Lines.Add('') + 1;
         for var s in L do
-          memTranslated.Lines.Add('▼ '#13#10 + s);
+          memTranslated.Lines.Add(csMarkOutput + s);
+        memTranslated.CaretPos := Point(0, LineN);
+        memTranslated.Perform(EM_SCROLLCARET, 0, 0);
       end);
     Task.Start;
   end;
