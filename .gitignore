@@ -7,3 +7,4 @@
 *.exe
 src/__recovery/
 bin/
+*.exe

@@ -20,34 +20,45 @@ object fmMain: TfmMain
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   TextHeight = 16
-  object memTranslated: TMemo
+  object memTranslated: TRzMemo
     Left = 0
     Top = 24
     Width = 192
     Height = 153
     Align = alClient
+    BevelInner = bvNone
+    BevelOuter = bvNone
     BorderStyle = bsNone
+    Color = clInfoBk
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
     HideSelection = False
+    ParentFont = False
+    ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
+    OnMouseWheel = memTranslatedMouseWheel
   end
-  object edPhraze: TButtonedEdit
+  object edPhraze: TSearchBox
     Left = 0
     Top = 0
     Width = 192
     Height = 24
     Align = alTop
-    Alignment = taCenter
+    BevelInner = bvNone
+    BevelOuter = bvNone
     BorderStyle = bsNone
-    Images = Images
-    LeftButton.ImageIndex = 0
-    LeftButton.Visible = True
-    RightButton.ImageIndex = 1
-    RightButton.Visible = True
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 1
     OnKeyPress = edPhrazeKeyPress
-    OnLeftButtonClick = edPhrazeLeftButtonClick
-    OnRightButtonClick = edPhrazeRightButtonClick
   end
   object Tray: TTrayIcon
     BalloonTimeout = 3000
@@ -2411,6 +2422,7 @@ object fmMain: TfmMain
     end
   end
   object Images: TPngImageList
+    DrawingStyle = dsTransparent
     Height = 20
     Width = 20
     PngImages = <
@@ -2462,6 +2474,5 @@ object fmMain: TfmMain
       end>
     Left = 56
     Top = 88
-    Bitmap = {}
   end
 end

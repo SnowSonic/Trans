@@ -17,7 +17,6 @@ begin
   {$ENDIF}
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Turquoise Gray');
   Application.CreateForm(TfmMain, fmMain);
   Application.Run;
 end.

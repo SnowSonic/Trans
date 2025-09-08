@@ -6,24 +6,24 @@ uses
   Winapi.Windows, Winapi.Messages,
   System.SysUtils, System.Variants, System.Classes, System.Threading, System.ImageList,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Menus, Vcl.ImgList,
-  PngImageList;
+  PngImageList, RzEdit, Vcl.WinXCtrls;
 
 type
   TfmMain = class(TForm)
     Images: TPngImageList;
-    edPhraze: TButtonedEdit;
-    memTranslated: TMemo;
     Tray: TTrayIcon;
     ppmTray: TPopupMenu;
     miExit: TMenuItem;
     miShowHide: TMenuItem;
+    memTranslated: TRzMemo;
+    edPhraze: TSearchBox;
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure edPhrazeKeyPress(Sender: TObject; var Key: Char);
-    procedure edPhrazeLeftButtonClick(Sender: TObject);
     procedure edPhrazeRightButtonClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure memTranslatedMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure miExitClick(Sender: TObject);
     procedure miShowHideClick(Sender: TObject);
     procedure ppmTrayPopup(Sender: TObject);
@@ -43,7 +43,7 @@ var
 implementation
 
 uses
-  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent,
+  System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent, System.Math,
   Vcl.Clipbrd,
   FormState, JsonDataObjects, pm.iif;
 
@@ -135,11 +135,6 @@ begin
   miShowHide.Checked := fmMain.Visible;
 end;
 
-procedure TfmMain.edPhrazeLeftButtonClick(Sender: TObject);
-begin
-  ClearAll;
-end;
-
 procedure TfmMain.edPhrazeRightButtonClick(Sender: TObject);
 begin
   Translate;
@@ -165,6 +160,15 @@ begin
   memTranslated.Lines.Clear;
   edPhraze.Text := '';
   ActiveControl := edPhraze;
+end;
+
+procedure TfmMain.memTranslatedMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  if not (ssCtrl in Shift) or (memTranslated.Font.Size <= 1) then
+    Exit;
+  Handled := True;
+  var si := Sign(WheelDelta);
+  memTranslated.Font.Size := memTranslated.Font.Size + si;
 end;
 
 procedure TfmMain.Translate;
