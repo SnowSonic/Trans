@@ -5,28 +5,36 @@ interface
 uses
   Winapi.Windows, Winapi.Messages,
   System.SysUtils, System.Variants, System.Classes, System.Threading, System.ImageList,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Menus, Vcl.ImgList,
-  PngImageList, RzEdit, Vcl.WinXCtrls;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Menus, Vcl.ImgList, Vcl.WinXCtrls,
+  PngImageList;
 
 type
+  TMemo = class(Vcl.StdCtrls.TMemo)
+  public
+    // Inherited Events
+    property OnMouseWheel;
+    property OnMouseWheelUp;
+    property OnMouseWheelDown;
+  end;
+
   TfmMain = class(TForm)
     Images: TPngImageList;
     Tray: TTrayIcon;
     ppmTray: TPopupMenu;
     miExit: TMenuItem;
     miShowHide: TMenuItem;
-    memTranslated: TRzMemo;
     edPhraze: TSearchBox;
-    procedure FormDestroy(Sender: TObject);
+    memTranslated: TMemo;
     procedure FormCreate(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure edPhrazeKeyPress(Sender: TObject; var Key: Char);
     procedure edPhrazeRightButtonClick(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure memTranslatedMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure ppmTrayPopup(Sender: TObject);
     procedure miExitClick(Sender: TObject);
     procedure miShowHideClick(Sender: TObject);
-    procedure ppmTrayPopup(Sender: TObject);
     procedure TrayDblClick(Sender: TObject);
   private
     procedure Translate;
@@ -71,6 +79,13 @@ begin
   Tray.BalloonTitle := 'Підказка';
   Tray.BalloonHint := Tray.Hint;
   Tray.ShowBalloonHint;
+  memTranslated.OnMouseWheel := memTranslatedMouseWheel;
+end;
+
+procedure TfmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  CanClose := False;
+  fmMain.Visible := False;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
@@ -80,10 +95,72 @@ begin
   UnregisterHotKey(Handle, ci_hkWinF12);
 end;
 
-procedure TfmMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+procedure TfmMain.FormKeyPress(Sender: TObject; var Key: Char);
 begin
-  CanClose := False;
-  fmMain.Visible := False;
+  if Key = #27 then
+  begin
+    if (Length(edPhraze.Text) = 0) and (memTranslated.Lines.Count = 0) then
+      Close
+    else
+      ClearAll;
+    Key := #0;
+  end;
+end;
+
+procedure TfmMain.edPhrazeKeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = #13 then
+  begin
+    Translate;
+    edPhraze.SelectAll;
+    Key := #0;
+  end;
+end;
+
+procedure TfmMain.edPhrazeRightButtonClick(Sender: TObject);
+begin
+  Translate;
+end;
+
+procedure TfmMain.memTranslatedMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  if not (ssCtrl in Shift) or (memTranslated.Font.Size <= 1) then
+    Exit;
+  Handled := True;
+  var si := Sign(WheelDelta);
+  memTranslated.Font.Size := memTranslated.Font.Size + si;
+end;
+
+procedure TfmMain.ppmTrayPopup(Sender: TObject);
+begin
+  miShowHide.Checked := fmMain.Visible;
+end;
+
+procedure TfmMain.miExitClick(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
+procedure TfmMain.miShowHideClick(Sender: TObject);
+begin
+  ToggleForm;
+end;
+
+procedure TfmMain.TrayDblClick(Sender: TObject);
+begin
+  ToggleForm;
+end;
+
+procedure TfmMain.ClearAll;
+begin
+  memTranslated.Lines.Clear;
+  edPhraze.Text := '';
+  ActiveControl := edPhraze;
+end;
+
+procedure TfmMain.ToggleForm;
+begin
+  fmMain.Visible := not fmMain.Visible;
 end;
 
 procedure TfmMain.WMHotKey(var Message: TMessage);
@@ -101,74 +178,6 @@ begin
     ci_hkWinF12: ;
     ci_hkWinF2:  Paste;
   end;
-end;
-
-procedure TfmMain.miExitClick(Sender: TObject);
-begin
-  Application.Terminate;
-end;
-
-procedure TfmMain.edPhrazeKeyPress(Sender: TObject; var Key: Char);
-begin
-  if Key = #13 then
-  begin
-    Translate;
-    edPhraze.SelectAll;
-    Key := #0;
-  end;
-end;
-
-procedure TfmMain.FormKeyPress(Sender: TObject; var Key: Char);
-begin
-  if Key = #27 then
-  begin
-    if (Length(edPhraze.Text) = 0) and (memTranslated.Lines.Count = 0) then
-      Close
-    else
-      ClearAll;
-    Key := #0;
-  end;
-end;
-
-procedure TfmMain.ppmTrayPopup(Sender: TObject);
-begin
-  miShowHide.Checked := fmMain.Visible;
-end;
-
-procedure TfmMain.edPhrazeRightButtonClick(Sender: TObject);
-begin
-  Translate;
-end;
-
-procedure TfmMain.miShowHideClick(Sender: TObject);
-begin
-  ToggleForm;
-end;
-
-procedure TfmMain.TrayDblClick(Sender: TObject);
-begin
-  ToggleForm;
-end;
-
-procedure TfmMain.ToggleForm;
-begin
-  fmMain.Visible := not fmMain.Visible;
-end;
-
-procedure TfmMain.ClearAll;
-begin
-  memTranslated.Lines.Clear;
-  edPhraze.Text := '';
-  ActiveControl := edPhraze;
-end;
-
-procedure TfmMain.memTranslatedMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-begin
-  if not (ssCtrl in Shift) or (memTranslated.Font.Size <= 1) then
-    Exit;
-  Handled := True;
-  var si := Sign(WheelDelta);
-  memTranslated.Font.Size := memTranslated.Font.Size + si;
 end;
 
 procedure TfmMain.Translate;

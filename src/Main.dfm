@@ -20,16 +20,33 @@ object fmMain: TfmMain
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   TextHeight = 16
-  object memTranslated: TRzMemo
+  object edPhraze: TSearchBox
     Left = 0
-    Top = 24
+    Top = 0
     Width = 192
-    Height = 153
+    Height = 27
+    Align = alTop
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 1
+    OnKeyPress = edPhrazeKeyPress
+  end
+  object memTranslated: TMemo
+    Left = 0
+    Top = 27
+    Width = 192
+    Height = 150
     Align = alClient
     BevelInner = bvNone
     BevelOuter = bvNone
     BorderStyle = bsNone
-    Color = clInfoBk
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -40,25 +57,7 @@ object fmMain: TfmMain
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
-    OnMouseWheel = memTranslatedMouseWheel
-  end
-  object edPhraze: TSearchBox
-    Left = 0
-    Top = 0
-    Width = 192
-    Height = 24
-    Align = alTop
-    BevelInner = bvNone
-    BevelOuter = bvNone
-    BorderStyle = bsNone
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 1
-    OnKeyPress = edPhrazeKeyPress
+    StyleElements = [seBorder]
   end
   object Tray: TTrayIcon
     BalloonTimeout = 3000
